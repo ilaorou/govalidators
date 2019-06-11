@@ -1,3 +1,3 @@
-module govalidators
+module validators
 
 go 1.12

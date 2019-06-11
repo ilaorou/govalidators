@@ -1,4 +1,4 @@
-package govalidators
+package validators
 
 import (
 	"fmt"
@@ -293,6 +293,7 @@ func (v *validator) validateValueFromTag(tag string, lazyFlag bool, fieldTypeInf
 			"syncMap": syncMap,
 			"allKey":  parentKey + "_" + fieldTypeInfo.Name,
 		}
+		fmt.Println("vK,", params, fieldInfo, vArgs)
 		valid, err := validator.Validate(params, fieldInfo, vArgs...)
 		if valid == false {
 			returnErr = append(returnErr, err)

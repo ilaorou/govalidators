@@ -1,13 +1,13 @@
-govalidators
+validators
 ===========
 golang初学者，在项目开发过程中造了一个简单的验证器轮子，欢迎大大们提宝贵建议和指导
 
 ### 安装
-  go get github.com/smokezl/govalidators
+  go get github.com/ilaorou/validators
 
 ### 导入
 ```go
-import "github.com/smokezl/govalidators"
+import "github.com/ilaorou/validators"
 ```
 
 ### 基本使用方式
@@ -15,7 +15,7 @@ import "github.com/smokezl/govalidators"
 ```go
 package main
 
-import "github.com/smokezl/govalidators"
+import "github.com/ilaorou/validators"
 
 type Class struct {
   Cid       int64  `validate:"required||integer=1,1000000"`
@@ -37,7 +37,7 @@ type Student struct {
 ```
 验证
 ```go
-validator := govalidators.New()
+validator := validators.New()
 if err := validator.Validate(student); err != nil {
   fmt.Println(err)
 }
@@ -76,7 +76,7 @@ func (self *UserValidator) Validate(params map[string]interface{}, val reflect.V
 ```
 ##### 3.定义好验证器后，初始化验证器
 ```go
-validator := govalidators.New()
+validator := validators.New()
 validator.SetValidators(map[string]interface{}{
   "user" : &UserValidator{},
   "vm" : validationMethod,
@@ -94,19 +94,19 @@ if err := validator.Validate(student); err != nil {
 ```
 ##### 6.也可以对现有的验证器进行参数设置
 ```go
-validator := govalidators.New()
+validator := validators.New()
 validator.SetValidators(map[string]interface{}{
-  "string": &govalidators.StringValidator{
-      Range: govalidators.Range{
+  "string": &validators.StringValidator{
+      Range: validators.Range{
         RangeEMsg: map[string]string{
           "between": "[name] 长度必须在 [min] 和 [max] 之间",
         },
       },
     },
-  "datetime": &govalidators.DateTimeValidator{
+  "datetime": &validators.DateTimeValidator{
     FmtStr: "Y-m-d",
   },
-  "Email": &govalidators.EmailValidator{
+  "Email": &validators.EmailValidator{
     Reg: `^(\d)+$`,
   },
 })
