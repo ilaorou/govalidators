@@ -28,7 +28,7 @@ type Range struct {
 	Max       string
 	min       string
 	max       string
-	RangeEMsg map[string]string //keys: lessThan,equal,atLeast,between
+	RangeEMsg map[string]string //keys: lt,eq,gt,between
 }
 
 //将structTag中的min和max解析到结构体中
@@ -62,19 +62,19 @@ func (self *Range) CompareFloat(valNum float64, eParamsMap map[string]string, er
 	if self.min == VALIDATOR_IGNORE_SIGN {
 		max, _ = strconv.ParseFloat(self.max, 64)
 		if valNum > max {
-			errKey = "lessThan"
+			errKey = "lt"
 			eParamsMap["max"] = self.max
 		}
 	} else if self.max == VALIDATOR_IGNORE_SIGN {
 		min, _ = strconv.ParseFloat(self.min, 64)
 		if valNum < min {
-			errKey = "atLeast"
+			errKey = "gt"
 			eParamsMap["min"] = self.min
 		}
 	} else if self.max == "" {
 		min, _ = strconv.ParseFloat(self.min, 64)
 		if valNum != min {
-			errKey = "equal"
+			errKey = "eq"
 			eParamsMap["min"] = self.min
 		}
 	} else {
@@ -111,19 +111,19 @@ func (self *Range) CompareInteger(valNum int64, eParamsMap map[string]string, er
 	if self.min == VALIDATOR_IGNORE_SIGN {
 		max, _ = strconv.ParseInt(self.max, 10, 64)
 		if valNum > max {
-			errKey = "lessThan"
+			errKey = "lt"
 			eParamsMap["max"] = self.max
 		}
 	} else if self.max == VALIDATOR_IGNORE_SIGN {
 		min, _ = strconv.ParseInt(self.min, 10, 64)
 		if valNum < min {
-			errKey = "atLeast"
+			errKey = "gt"
 			eParamsMap["min"] = self.min
 		}
 	} else if self.max == "" {
 		min, _ = strconv.ParseInt(self.min, 10, 64)
 		if valNum != min {
-			errKey = "equal"
+			errKey = "eq"
 			eParamsMap["min"] = self.min
 		}
 	} else {
