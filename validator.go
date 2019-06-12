@@ -1,17 +1,20 @@
 package validators
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
 	"sync"
+	"validators/lang"
 )
 
 const (
-	STRUCT_EMPTY          = "struct %v is empty"
-	VALIDATOR_VALUE_SIGN  = "="
-	VALIDATOR_RANGE_SPLIT = ","
-	VALIDATOR_IGNORE_SIGN = "_"
+	STRUCT_EMPTY            = "struct %v is empty"
+	VALIDATOR_VALUE_SIGN    = "="
+	VALIDATOR_RANGE_SPLIT   = ","
+	VALIDATOR_IGNORE_SIGN   = "_"
+	VALIDATOR_MUTIPLE_SPLIT = ";"
 
 	//邮箱验证正则
 	MAIL_REG = `\A[\w+\-.]+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z`
@@ -63,73 +66,109 @@ var arrayErrorMap = map[string]string{
  * range 验证错误提示 map
  ****************************************************/
 
-var defaultValidator = map[string]interface{}{
-	"required": &RequiredValidator{},
-	"string":   &StringValidator{},
-	"integer":  &IntegerValidator{},
-	"array":    &ArrayValidator{},
-	"email":    &EmailValidator{},
-	"url":      &UrlValidator{},
-	"in":       &InValidator{},
-	"datetime": &DateTimeValidator{},
-	"unique":   &UniqueValidator{},
+type FuncCtx func(ctx context.Context, fv reflect.Value) bool
+type Func func(ft reflect.Type, fv reflect.Value, params ...string) (err error)
+
+var defaultValidator = map[string]Func{
+	"eq": GreatThenValidator,
+	//"required": &RequiredValidator{},
+	//"string":   &StringValidator{},
+	//"integer":  &IntegerValidator{},
+	//"eq":       &isGt{},
+	//"lt":       &LessThenValidator{},
+	//"gt":       &GreatThenValidator{},
+	//"array":    &ArrayValidator{},
+	//"email":    &EmailValidator{},
+	//"url":      &UrlValidator{},
+	//"in":       &InValidator{},
+	//"datetime": &DateTimeValidator{},
+	//"unique":   &UniqueValidator{},
+}
+
+func GreatThenValidator(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+	err = fmt.Errorf("ddd")
+	return
 }
 
 var errorMsg map[string][]string
 
 type Validator struct {
-	tagName           string
-	skipOnStructEmpty bool
-	validatorSplit    string
-	TitleTag          string
-	validator         map[string]interface{}
+	ValidTag   string
+	TitleTag   string
+	lazy       bool
+	lang       string
+	allowEmpty bool
+	validator  map[string]Func
 }
 
 func New() *Validator {
 	return &Validator{
-		tagName:           "validate",
-		TitleTag:          "title",
-		skipOnStructEmpty: true,
-		validatorSplit:    ";",
-		validator:         defaultValidator,
+		ValidTag:   "validate",
+		TitleTag:   "title",
+		lang:       "zh",
+		lazy:       true,
+		allowEmpty: true,
+		validator:  defaultValidator,
 	}
 }
 
-func (v *Validator) SetTag(tag string) *Validator {
-	v.tagName = tag
+// SetValidTag 设置校验tag
+func (v *Validator) SetValidTag(tag string) *Validator {
+	v.ValidTag = tag
 	return v
 }
 
+// SetTitleTag 设置字段标题tag
 func (v *Validator) SetTitleTag(titleTag string) *Validator {
 	v.TitleTag = titleTag
 	return v
 }
 
-func (v *Validator) SetSkipOnStructEmpty(skip bool) *Validator {
-	v.skipOnStructEmpty = skip
+// SetAllowEmpty 允许空结构
+func (v *Validator) SetAllowEmpty(skip bool) *Validator {
+	v.allowEmpty = skip
 	return v
 }
 
-func (v *Validator) SetValidatorSplit(str string) *Validator {
-	v.validatorSplit = str
+// SetLang 设置语言
+func (v *Validator) SetLang(lang string) *Validator {
+	v.lang = lang
+
 	return v
 }
 
-func (v *Validator) SetValidator(validatorK string, validator interface{}) *Validator {
+// t 翻译语言
+func (v *Validator) t(key string) string {
+	if t, ok := lang.Lang[v.lang][key]; ok {
+		return t
+	}
+	return "translations fail:" + key
+}
+
+// SetLazy 设置语言
+func (v *Validator) SetLazy(lazy bool) *Validator {
+	v.lazy = lazy
+	return v
+}
+
+// RegisterValidator 注册新验证规则
+func (v *Validator) RegisterValidator(validatorK string, validator Func) *Validator {
 	v.validator[validatorK] = validator
 	return v
 }
 
-func (v *Validator) SetValidators(validatorMap map[string]interface{}) *Validator {
+// RegisterValidators 批量注册新验证规则
+func (v *Validator) RegisterValidators(validatorMap map[string]Func) *Validator {
 	for validatorK, validatorV := range validatorMap {
 		v.validator[validatorK] = validatorV
 	}
 	return v
 }
 
+// LazyValidate 延迟校验输出
 func (v *Validator) LazyValidate(s interface{}) (err error) {
 	syncMap := &sync.Map{}
-	parentKey := v.tagName
+	parentKey := v.ValidTag
 	errArr := v.validate(s, true, syncMap, parentKey)
 	syncMap = nil
 	if errArr != nil {
@@ -138,15 +177,25 @@ func (v *Validator) LazyValidate(s interface{}) (err error) {
 	return
 }
 
-func (v *Validator) Validate(s interface{}) (err []error) {
+// Struct 校验结构体
+func (v *Validator) Struct(s interface{}) (err []error) {
 	syncMap := &sync.Map{}
-	parentKey := v.tagName
+	parentKey := v.ValidTag
 	err = v.validate(s, false, syncMap, parentKey)
 	syncMap = nil
 	return
 }
 
-func (v *Validator) validate(s interface{}, lazyFlag bool, syncMap *sync.Map, parentKey string) (returnErr []error) {
+// Value 校验值
+func (v *Validator) Value(s interface{}) (err []error) {
+	syncMap := &sync.Map{}
+	parentKey := v.ValidTag
+	err = v.validate(s, false, syncMap, parentKey)
+	syncMap = nil
+	return
+}
+
+func (v *Validator) validate(s interface{}, lazyFlag bool, syncMap *sync.Map, parentKey string) (errs []error) {
 	var errArr []error
 	typeObj := reflect.TypeOf(s)
 	typeValue := reflect.ValueOf(s)
@@ -162,7 +211,7 @@ func (v *Validator) validate(s interface{}, lazyFlag bool, syncMap *sync.Map, pa
 				tmpParentKey := fmt.Sprintf("%v_%v", parentKey, i)
 				errArr = v.validate(typeValue.Index(i).Interface(), lazyFlag, syncMap, tmpParentKey)
 				if len(errArr) > 0 {
-					returnErr = append(returnErr, errArr...)
+					errs = append(errs, errArr...)
 					if lazyFlag {
 						return
 					}
@@ -177,10 +226,10 @@ func (v *Validator) validate(s interface{}, lazyFlag bool, syncMap *sync.Map, pa
 	case reflect.Struct:
 		numField := typeValue.NumField()
 		if numField <= 0 {
-			if v.skipOnStructEmpty {
+			if v.allowEmpty {
 				return
 			}
-			returnErr = append(returnErr, fmt.Errorf(STRUCT_EMPTY, typeObj.Name()))
+			errs = append(errs, fmt.Errorf(STRUCT_EMPTY, typeObj.Name()))
 			return
 		}
 
@@ -188,16 +237,16 @@ func (v *Validator) validate(s interface{}, lazyFlag bool, syncMap *sync.Map, pa
 			fieldInfo := typeValue.Field(i)
 			fieldTypeInfo := typeValue.Type().Field(i)
 			fieldType := fieldInfo.Type().Kind()
-			tag := fieldTypeInfo.Tag.Get(v.tagName)
+			tag := fieldTypeInfo.Tag.Get(v.ValidTag)
 			if tag != "" {
 				//没有配置 required，并且 field 为 0 值的，直接跳过
 				isZeroValue := isZeroValue(fieldInfo)
-				if isZeroValue && !strings.Contains(tag, "required") && !v.skipOnStructEmpty {
+				if isZeroValue && !strings.Contains(tag, "required") && !v.allowEmpty {
 					continue
 				}
-				errArr = v.validateValueFromTag(tag, lazyFlag, fieldTypeInfo, fieldInfo, syncMap, parentKey)
+				errArr = v.validateRule(tag, tag)
 				if len(errArr) > 0 {
-					returnErr = append(returnErr, errArr...)
+					errs = append(errs, errArr...)
 					if lazyFlag {
 						return
 					}
@@ -210,7 +259,7 @@ func (v *Validator) validate(s interface{}, lazyFlag bool, syncMap *sync.Map, pa
 					tmpParentKey := fmt.Sprintf("%v_%v", parentKey, fieldTypeInfo.Name)
 					errArr = v.validate(fieldInfo.Index(i).Interface(), lazyFlag, syncMap, tmpParentKey)
 					if len(errArr) > 0 {
-						returnErr = append(returnErr, errArr...)
+						errs = append(errs, errArr...)
 						if lazyFlag {
 							return
 						}
@@ -223,7 +272,7 @@ func (v *Validator) validate(s interface{}, lazyFlag bool, syncMap *sync.Map, pa
 				tmpParentKey := fmt.Sprintf("%v_%v", parentKey, fieldTypeInfo.Name)
 				errArr = v.validate(fieldInfo.Interface(), lazyFlag, syncMap, tmpParentKey)
 				if len(errArr) > 0 {
-					returnErr = append(returnErr, errArr...)
+					errs = append(errs, errArr...)
 					if lazyFlag {
 						return
 					}
@@ -235,73 +284,38 @@ func (v *Validator) validate(s interface{}, lazyFlag bool, syncMap *sync.Map, pa
 	return
 }
 
-//根据 tag 申请验证器进行验证
-func (v *Validator) validateValueFromTag(tag string, lazyFlag bool, fieldTypeInfo reflect.StructField, fieldInfo reflect.Value, syncMap *sync.Map, parentKey string) (returnErr []error) {
-	validatorT := reflect.TypeOf((*IValidator)(nil)).Elem()
-	validatorFT := reflect.TypeOf((*ValidatorF)(nil)).Elem()
-	title := fieldTypeInfo.Tag.Get(v.TitleTag)
-	args := strings.Split(tag, v.validatorSplit)
-
-	for _, argTmp := range args {
-		var vK string = argTmp
-		var vArgs []string
+func (v *Validator) validateRule(s interface{}, rulerString string) (errs []error) {
+	typeObj := reflect.TypeOf(s)
+	typeValue := reflect.ValueOf(s)
+	rulers := strings.Split(rulerString, VALIDATOR_MUTIPLE_SPLIT)
+	for _, ruler := range rulers {
+		var params []string
 		//查找是否含有赋值符号
-		num := strings.Index(argTmp, VALIDATOR_VALUE_SIGN)
+		num := strings.Index(ruler, VALIDATOR_VALUE_SIGN)
 		//不等于 -1, 表示含有"="
 		if num != -1 {
-			vK = argTmp[0:num]
-			vArgs = strings.Split(argTmp[num+1:], VALIDATOR_RANGE_SPLIT)
+			params = strings.Split(ruler[num+1:], VALIDATOR_RANGE_SPLIT)
+			ruler = ruler[0:num]
 		}
-
-		if _, ok := v.validator[vK]; !ok {
-			// 验证规则不存在
-			returnErr = append(returnErr, fmt.Errorf("Validator %v not exist |", vK))
-			if lazyFlag {
+		// 判断验证规则是否存在
+		if _, ok := v.validator[ruler]; !ok {
+			errs = append(errs, fmt.Errorf(v.t(lang.VALID_NOT_EXIST), ruler))
+			if v.lazy == false {
 				return
 			}
 			continue
 		}
 
-		var validator IValidator
-		tmpValidator := v.validator[vK]
-		vT := reflect.TypeOf(tmpValidator)
-		if vT.ConvertibleTo(validatorFT) {
-			tmpV, ok := tmpValidator.(func(params map[string]interface{}, val reflect.Value, args ...string) (bool, error))
-			if !ok {
-				returnErr = append(returnErr, fmt.Errorf("Validator %v error", vK))
-				if lazyFlag {
-					return
-				}
-				continue
-			}
-			validator = ValidatorF(tmpV)
-		} else if vT.Implements(validatorT) {
-			validator = tmpValidator.(IValidator)
-		} else {
-			returnErr = append(returnErr, fmt.Errorf("Validator %v error", vK))
-			if lazyFlag {
+		// 验证规则
+		err := v.validator[ruler](typeObj, typeValue, params...)
+		if err != nil {
+			errs = append(errs, err)
+			if v.lazy == false {
 				return
 			}
 			continue
 		}
-		name := fieldTypeInfo.Name
-		if title != "" {
-			name = title
-		}
-		var params = map[string]interface{}{
-			"name":    name,
-			"syncMap": syncMap,
-			"allKey":  parentKey + "_" + fieldTypeInfo.Name,
-		}
-		fmt.Println("vK,", params, fieldInfo, vArgs)
-		valid, err := validator.Validate(params, fieldInfo, vArgs...)
-		if valid == false {
-			returnErr = append(returnErr, err)
-			if lazyFlag {
-				return
-			}
-			continue
-		}
+
 	}
 	return
 }
