@@ -1,3 +1,3 @@
-module github.com/ilaorou/govalidators
+module github.com/ilaorou/validators
 
 go 1.12
