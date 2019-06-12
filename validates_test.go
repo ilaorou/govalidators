@@ -484,19 +484,19 @@ func TestUrl(t *testing.T) {
 }
 
 type Class struct {
-	Cid       int64  `validate:"required#integer=1,1000000"`
-	Cname     string `validate:"required#string=1,5#unique"`
-	BeginTime string `validate:"required#datetime=H:i"`
+	Cid       int64  `validate:"required;integer=1,1000000"`
+	Cname     string `validate:"required;string=1,5;unique"`
+	BeginTime string `validate:"required;datetime=H:i"`
 }
 
 type Student struct {
-	Uid          int64    `validate:"required#integer=1,1000000" title:"学生ID"`
-	Name         string   `validate:"required#string=1,5" title:"姓名"`
-	Age          int64    `validate:"required#integer=10,30"`
-	Sex          string   `validate:"required#in=male,female"`
+	Uid          int64    `validate:"required;integer=1,1000000" title:"学生ID"`
+	Name         string   `validate:"required;string=1,5" title:"姓名"`
+	Age          int64    `validate:"required;integer=10,30"`
+	Sex          string   `validate:"required;in=male,female"`
 	Email        string   `validate:"email"`
-	PersonalPage string   `validate:"url#um#usv"`
-	Hobby        []string `validate:"array=_,2#unique#in=swimming,running,drawing"`
+	PersonalPage string   `validate:"url;um;usv"`
+	Hobby        []string `validate:"array=_,2;unique;in=swimming,running,drawing"`
 	CreateTime   string   `validate:"datetime"`
 	Class        []Class  `validate:"array=1,3"`
 	expected     bool

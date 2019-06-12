@@ -12,7 +12,7 @@ import (
 )
 
 //验证接口
-type Validator interface {
+type IValidator interface {
 	Validate(params map[string]interface{}, val reflect.Value, args ...string) (bool, error)
 }
 
@@ -36,7 +36,7 @@ func (self *Range) InitRangeNum(eParamsMap map[string]string, args ...string) er
 	self.min, self.max = self.Min, self.Max
 	argsL := len(args)
 	if (self.Min == "" && argsL == 0) || argsL > 2 {
-		return formatError("[name] validator range error", eParamsMap)
+		return formatError("[name] Validator range error", eParamsMap)
 	}
 	if argsL == 1 {
 		self.min = args[0]
@@ -51,7 +51,7 @@ func (self *Range) CompareFloat(valNum float64, eParamsMap map[string]string, er
 	if self.min == "" ||
 		(self.min != VALIDATOR_IGNORE_SIGN && !regexp.MustCompile(FLOAT_REG).MatchString(self.min)) ||
 		(self.max != VALIDATOR_IGNORE_SIGN && !regexp.MustCompile(FLOAT_REG).MatchString(self.max) && self.max != "") {
-		return formatError("[name] validator range error", eParamsMap)
+		return formatError("[name] Validator range error", eParamsMap)
 	}
 	if self.min == VALIDATOR_IGNORE_SIGN && (self.max == VALIDATOR_IGNORE_SIGN || self.max == "") {
 		return nil
@@ -99,7 +99,7 @@ func (self *Range) CompareInteger(valNum int64, eParamsMap map[string]string, er
 	if self.min == "" ||
 		(self.min != VALIDATOR_IGNORE_SIGN && !regexp.MustCompile(INTEGER_REG).MatchString(self.min)) ||
 		(self.max != VALIDATOR_IGNORE_SIGN && !regexp.MustCompile(INTEGER_REG).MatchString(self.max) && self.max != "") {
-		return formatError("[name] validator range error", eParamsMap)
+		return formatError("[name] Validator range error", eParamsMap)
 	}
 	if self.min == VALIDATOR_IGNORE_SIGN && (self.max == VALIDATOR_IGNORE_SIGN || self.max == "") {
 		return nil
@@ -130,7 +130,7 @@ func (self *Range) CompareInteger(valNum int64, eParamsMap map[string]string, er
 		max, _ = strconv.ParseInt(self.max, 10, 64)
 		min, _ = strconv.ParseInt(self.min, 10, 64)
 		if min >= max {
-			return formatError("[name] validator range error", eParamsMap)
+			return formatError("[name] Validator range error", eParamsMap)
 		}
 		if valNum < min || valNum > max {
 			errKey = "between"
