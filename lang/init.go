@@ -1,8 +1,11 @@
 package lang
 
 const (
-	VALID_NOT_EXIST = "VALID_NOT_EXIST"
-	VALID_ERROR     = "VALID_ERROR"
+	ValidNotExist = "ValidNotExist"
+	ValidError    = "ValidError"
+	ValidIsNumber = "ValidIsNumber"
+	ValidIsPhone  = "ValidIsPhone"
+	ValidIsUrl    = "ValidIsUrl"
 )
 
 var Lang map[string]map[string]string

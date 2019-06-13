@@ -1,4 +1,4 @@
-module github.com/ilaorou/validators
+module validators
 
 go 1.12
 
