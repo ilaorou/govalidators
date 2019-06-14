@@ -189,6 +189,7 @@ func TestLen(t *testing.T) {
 		expected bool
 	}{
 		{"s", true},
+		{"中文", true},
 		{"sssss", true},
 		{"", false},
 		{"ssssss", false},
@@ -216,7 +217,7 @@ func TestLen(t *testing.T) {
 		}
 	}
 
-	testAtLeast := []struct {
+	testGreatThen := []struct {
 		param    string `validate:"len=2,_"`
 		expected bool
 	}{
@@ -225,7 +226,7 @@ func TestLen(t *testing.T) {
 		{"s", false},
 		{"", false},
 	}
-	for _, test := range testAtLeast {
+	for _, test := range testGreatThen {
 		err := validator.Struct(test)
 		if (err != nil && test.expected == true) || (err == nil && test.expected != true) {
 			t.Errorf("Expected string,value %v,err %v", test.param, err)
@@ -247,27 +248,41 @@ func TestLen(t *testing.T) {
 			t.Errorf("Expected string,value %v,err %v", test.param, err)
 		}
 	}
-}
 
-func TestArray(t *testing.T) {
-	validator := New()
-
-	testType := []struct {
-		param    string `validate:"array"`
+	testInt := []struct {
+		param    int `validate:"len=1,500"`
 		expected bool
 	}{
-		{"", false},
-		{"sss", false},
+		{1, true},
+		{123, true},
+		{12345, false},
+		{1234567, false},
 	}
-	for _, test := range testType {
+	for _, test := range testInt {
 		err := validator.Struct(test)
 		if (err != nil && test.expected == true) || (err == nil && test.expected != true) {
-			t.Errorf("Expected array,value %v,err %v", test.param, err)
+			t.Errorf("Expected string,value %v,err %v", test.param, err)
 		}
 	}
 
-	testBetween := []struct {
-		param    []string `validate:"array=1,5"`
+	testFloat := []struct {
+		param    float64 `validate:"len=1,500"`
+		expected bool
+	}{
+		{1, true},
+		{123.23, true},
+		{1234.21, false},
+		{123456.12, false},
+	}
+	for _, test := range testFloat {
+		err := validator.Struct(test)
+		if (err != nil && test.expected == true) || (err == nil && test.expected != true) {
+			t.Errorf("Expected string,value %v,err %v", test.param, err)
+		}
+	}
+
+	testArray := []struct {
+		param    []string `validate:"len=1,5"`
 		expected bool
 	}{
 		{[]string{"s"}, true},
@@ -275,53 +290,22 @@ func TestArray(t *testing.T) {
 		{[]string{}, false},
 		{[]string{"s", "s", "s", "s", "s", "s"}, false},
 	}
-	for _, test := range testBetween {
+	for _, test := range testArray {
 		err := validator.Struct(test)
 		if (err != nil && test.expected == true) || (err == nil && test.expected != true) {
 			t.Errorf("Expected array,value %v,err %v", test.param, err)
 		}
 	}
 
-	testEqual := []struct {
-		param    []string `validate:"array=5"`
-		expected bool
-	}{
-		{[]string{"s", "s", "s", "s", "s"}, true},
-		{[]string{"s", "s", "s", "s"}, false},
-		{[]string{}, false},
-		{[]string{"s", "s", "s", "s", "s", "s"}, false},
-	}
-	for _, test := range testEqual {
-		err := validator.Struct(test)
-		if (err != nil && test.expected == true) || (err == nil && test.expected != true) {
-			t.Errorf("Expected array,value %v,err %v", test.param, err)
-		}
-	}
-
-	testAtLeast := []struct {
-		param    []string `validate:"array=2,_"`
-		expected bool
-	}{
-		{[]string{"s", "s"}, true},
-		{[]string{"s"}, false},
-		{[]string{}, false},
-	}
-	for _, test := range testAtLeast {
-		err := validator.Struct(test)
-		if (err != nil && test.expected == true) || (err == nil && test.expected != true) {
-			t.Errorf("Expected array,value %v,err %v", test.param, err)
-		}
-	}
-
-	testLessThan := []struct {
-		param    map[string]string `validate:"array=_,3"`
+	testMap := []struct {
+		param    map[string]string `validate:"len=_,3"`
 		expected bool
 	}{
 		{map[string]string{"k1": "s1"}, true},
 		{map[string]string{}, true},
 		{map[string]string{"k1": "s1", "k2": "s2", "k3": "s3", "k4": "s4"}, false},
 	}
-	for _, test := range testLessThan {
+	for _, test := range testMap {
 		err := validator.Struct(test)
 		if (err != nil && test.expected == true) || (err == nil && test.expected != true) {
 			t.Errorf("Expected array,value %v,err %v", test.param, err)
@@ -335,6 +319,34 @@ type uniqT struct {
 
 func TestUnique(t *testing.T) {
 	validator := New()
+
+	//testUnique2 := []struct {
+	//	Param    []uniqT
+	//	expected bool
+	//}{
+	//	{[]uniqT{{"a"}, uniqT{"b"}, uniqT{"c"}, uniqT{"d"}, uniqT{"e"}}, true},
+	//	{[]uniqT{{"a"}, uniqT{"b"}, uniqT{"c"}, uniqT{"d"}, uniqT{"a"}}, false},
+	//}
+	//for _, test := range testUnique2 {
+	//	err := validator.Struct(test)
+	//	if (err != nil && test.expected == true) || (err == nil && test.expected != true) {
+	//		t.Errorf("Expected unique,value %v,err %v", test.Param, err)
+	//	}
+	//}
+
+	testUnique0 := []struct {
+		param    []int `validate:"unique"`
+		expected bool
+	}{
+		{[]int{1, 2, 3, 4, 5}, true},
+	}
+	for _, test := range testUnique0 {
+		err := validator.Struct(test)
+		if (err != nil && test.expected == true) || (err == nil && test.expected != true) {
+			t.Errorf("Expected unique,value %v,err %v", test.param, err)
+		}
+	}
+
 	testUnique1 := []struct {
 		param    []string `validate:"unique"`
 		expected bool
@@ -349,19 +361,6 @@ func TestUnique(t *testing.T) {
 		}
 	}
 
-	testUnique2 := []struct {
-		Param    []uniqT
-		expected bool
-	}{
-		{[]uniqT{{"a"}, uniqT{"b"}, uniqT{"c"}, uniqT{"d"}, uniqT{"e"}}, true},
-		{[]uniqT{{"a"}, uniqT{"b"}, uniqT{"c"}, uniqT{"d"}, uniqT{"a"}}, false},
-	}
-	for _, test := range testUnique2 {
-		err := validator.Struct(test)
-		if (err != nil && test.expected == true) || (err == nil && test.expected != true) {
-			t.Errorf("Expected unique,value %v,err %v", test.Param, err)
-		}
-	}
 }
 
 func TestDateTime(t *testing.T) {

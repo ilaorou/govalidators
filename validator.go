@@ -225,8 +225,9 @@ func (v *Validator) validate(s interface{}, lazyFlag bool, syncMap *sync.Map, pa
 			if ok, fieldNum := checkArrayValueIsMulti(fv); ok {
 				for i := 0; i < fieldNum; i++ {
 					//tmpParentKey := fmt.Sprintf("%v_%v", parentKey, fieldTypeInfo.Name)
-					tmpParentKey := fmt.Sprintf("%v_%v", parentKey, fieldTypeInfo.Name)
-					errArr = v.validate(fv.Index(i).Interface(), lazyFlag, syncMap, tmpParentKey)
+					//tmpParentKey := fmt.Sprintf("%v_%v", parentKey, fieldTypeInfo.Name)
+					//fmt.Println("tmpParentKey:",fv.Index(i).Interface(),tmpParentKey)
+					errArr = v.validate(fv.Index(i).Interface(), lazyFlag, syncMap, parentKey)
 					if len(errArr) > 0 {
 						errs = append(errs, errArr...)
 						if lazyFlag {
