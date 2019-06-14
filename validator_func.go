@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"time"
 	"unicode/utf8"
-	"validators/lang"
 )
 
 var (
@@ -417,7 +416,7 @@ func isEmail(ft reflect.Type, fv reflect.Value, title string, params ...string) 
 // isPhone
 func isPhone(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	if !phoneRegex.MatchString(fv.String()) {
-		err = fmt.Errorf(trans(lang.ValidIsPhone), fv.String())
+		err = fmt.Errorf(trans(ValidIsPhone), fv.String())
 	}
 	return
 }
@@ -429,7 +428,7 @@ func isNumber(ft reflect.Type, fv reflect.Value, title string, params ...string)
 		return
 	default:
 		if !numberRegex.MatchString(fv.String()) {
-			err = fmt.Errorf(trans(lang.ValidIsNumber), fv.String())
+			err = fmt.Errorf(trans(ValidIsNumber), fv.String())
 		}
 		return
 	}

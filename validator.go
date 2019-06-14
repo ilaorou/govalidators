@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"strings"
 	"sync"
-	"validators/lang"
 )
 
 const (
@@ -66,7 +65,7 @@ var arrayErrorMap = map[string]string{
  ****************************************************/
 
 var errorMsg map[string][]string
-var Lang = "zh"
+var lang = "zh"
 
 type Validator struct {
 	ValidTag   string
@@ -105,9 +104,8 @@ func (v *Validator) SetAllowEmpty(skip bool) *Validator {
 }
 
 // SetLang 设置语言
-func (v *Validator) SetLang(lang string) *Validator {
-	Lang = lang
-
+func (v *Validator) SetLang(l string) *Validator {
+	lang = l
 	return v
 }
 
@@ -273,7 +271,7 @@ func (v *Validator) validateRule(typeObj reflect.Type, typeValue reflect.Value, 
 		}
 		// 判断验证规则是否存在
 		if _, ok := v.validator[ruler]; !ok {
-			errs = append(errs, fmt.Errorf(trans(lang.ValidNotExist), ruler))
+			errs = append(errs, fmt.Errorf(trans(ValidNotExist), ruler))
 			if v.lazy == false {
 				return
 			}

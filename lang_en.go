@@ -1,4 +1,4 @@
-package lang
+package validators
 
 var en = map[string]string{
 	ValidNotExist: "Validator %v not exist",

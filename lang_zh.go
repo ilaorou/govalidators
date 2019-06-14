@@ -1,4 +1,4 @@
-package lang
+package validators
 
 var zh = map[string]string{
 	ValidNotExist: "校验规则 %v 不存在",

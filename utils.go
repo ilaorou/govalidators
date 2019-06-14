@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"validators/lang"
 )
 
 type Kind uint
@@ -258,7 +257,7 @@ func panicIf(err error) {
 
 // t 翻译语言
 func trans(key string) string {
-	if t, ok := lang.Lang[Lang][key]; ok {
+	if t, ok := Lang[lang][key]; ok {
 		return t
 	}
 	return "translations fail:" + key

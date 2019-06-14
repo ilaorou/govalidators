@@ -121,9 +121,9 @@ func TestIn2(t *testing.T) {
 		param    int `validate:"gt=10;lt=13" title:"abc"`
 		expected bool
 	}{
-		{-10, true},
-		{10, false},
-		{15, true},
+		{-10, false},
+		{11, false},
+		{15, false},
 		{9, false},
 	}
 	for _, test := range testGt {
