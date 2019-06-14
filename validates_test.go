@@ -10,7 +10,7 @@ func TestRequired(t *testing.T) {
 	validator := New()
 
 	testString := []struct {
-		param    string `validate:"required"`
+		param    string `validate:"required" title:"学生ID++++++"`
 		expected bool
 	}{
 		{"1", true},
@@ -112,6 +112,21 @@ func TestIn2(t *testing.T) {
 		{"9", false},
 	}
 	for _, test := range testEqual {
+		err := validator.Struct(test)
+		if (err != nil && test.expected == true) || (err == nil && test.expected != true) {
+			t.Errorf("Expected required,value %v,err %v,expected  %v", test.param, err, test.expected)
+		}
+	}
+	testGt := []struct {
+		param    int `validate:"gt=10;lt=13" title:"abc"`
+		expected bool
+	}{
+		{-10, true},
+		{10, false},
+		{15, true},
+		{9, false},
+	}
+	for _, test := range testGt {
 		err := validator.Struct(test)
 		if (err != nil && test.expected == true) || (err == nil && test.expected != true) {
 			t.Errorf("Expected required,value %v,err %v,expected  %v", test.param, err, test.expected)

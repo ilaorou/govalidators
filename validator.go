@@ -205,6 +205,7 @@ func (v *Validator) validate(s interface{}, lazyFlag bool, syncMap *sync.Map, pa
 			fieldTypeInfo := rv.Type().Field(i)
 			fieldType := fv.Type().Kind()
 			tag := fieldTypeInfo.Tag.Get(v.ValidTag)
+			title := fieldTypeInfo.Tag.Get(v.TitleTag)
 			if tag != "" {
 				//fmt.Println("ffff:", fv, ft, fieldTypeInfo)
 				//没有配置 required，并且 field 为 0 值的，直接跳过
@@ -212,7 +213,10 @@ func (v *Validator) validate(s interface{}, lazyFlag bool, syncMap *sync.Map, pa
 				if isZeroValue && !strings.Contains(tag, "required") && !v.allowEmpty {
 					continue
 				}
-				errArr = v.validateRule(ft, fv, tag)
+				if title == "" {
+					title = fieldTypeInfo.Name
+				}
+				errArr = v.validateRule(ft, fv, title, tag)
 				if len(errArr) > 0 {
 					errs = append(errs, errArr...)
 					if lazyFlag {
@@ -226,7 +230,7 @@ func (v *Validator) validate(s interface{}, lazyFlag bool, syncMap *sync.Map, pa
 				for i := 0; i < fieldNum; i++ {
 					//tmpParentKey := fmt.Sprintf("%v_%v", parentKey, fieldTypeInfo.Name)
 					//tmpParentKey := fmt.Sprintf("%v_%v", parentKey, fieldTypeInfo.Name)
-					//fmt.Println("tmpParentKey:",fv.Index(i).Interface(),tmpParentKey)
+					//fmt.Println("tmpParentKey:",fv.Index(i).Interface(),tmpParentKey)tmpParentKey
 					errArr = v.validate(fv.Index(i).Interface(), lazyFlag, syncMap, parentKey)
 					if len(errArr) > 0 {
 						errs = append(errs, errArr...)
@@ -254,7 +258,7 @@ func (v *Validator) validate(s interface{}, lazyFlag bool, syncMap *sync.Map, pa
 	return
 }
 
-func (v *Validator) validateRule(typeObj reflect.Type, typeValue reflect.Value, rulerString string) (errs []error) {
+func (v *Validator) validateRule(typeObj reflect.Type, typeValue reflect.Value, title string, rulerString string) (errs []error) {
 	//typeObj := reflect.TypeOf(s)
 	//typeValue := reflect.ValueOf(s)
 	rulers := strings.Split(rulerString, VALIDATOR_MUTIPLE_SPLIT)
@@ -278,7 +282,7 @@ func (v *Validator) validateRule(typeObj reflect.Type, typeValue reflect.Value, 
 
 		// 验证规则
 		//fmt.Println("typeValue", typeValue.String())
-		err := v.validator[ruler](typeObj, typeValue, params...)
+		err := v.validator[ruler](typeObj, typeValue, title, params...)
 		if err != nil {
 			errs = append(errs, err)
 			if v.lazy == false {

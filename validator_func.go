@@ -17,7 +17,7 @@ var (
 
 type FuncCtx func(ctx context.Context, fv reflect.Value) bool
 
-type Func func(ft reflect.Type, fv reflect.Value, params ...string) (err error)
+type Func func(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error)
 
 var defaultValidator = map[string]Func{
 	"required": hasValue,
@@ -43,7 +43,7 @@ var defaultValidator = map[string]Func{
 }
 
 // isEq
-func isEq(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func isEq(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	var flag bool
 	if len(params) != 1 {
 		err = fmt.Errorf("参数个数有误")
@@ -79,7 +79,7 @@ func isEq(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
 }
 
 // IisLt
-func isLt(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func isLt(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	var flag bool
 	if len(params) != 1 {
 		err = fmt.Errorf("参数个数有误")
@@ -115,15 +115,15 @@ func isLt(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
 	default:
 		panic(fmt.Sprintf("Bad field type %T", fv.Interface()))
 	}
-	if flag {
-		err = fmt.Errorf("不等于")
+	if !flag {
+		err = fmt.Errorf("%s不小于%s", title, param)
 	}
 	return
 
 }
 
 // isLte
-func isLte(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func isLte(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	var flag bool
 	if len(params) != 1 {
 		err = fmt.Errorf("参数个数有误")
@@ -162,14 +162,14 @@ func isLte(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
 	default:
 		panic(fmt.Sprintf("Bad field type %T", fv.Interface()))
 	}
-	if flag {
-		err = fmt.Errorf("不等于")
+	if !flag {
+		err = fmt.Errorf("%s大于%s", title, param)
 	}
 	return
 }
 
 // isGt
-func isGt(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func isGt(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	var flag bool
 	if len(params) != 1 {
 		err = fmt.Errorf("参数个数有误")
@@ -205,14 +205,14 @@ func isGt(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
 	default:
 		panic(fmt.Sprintf("Bad field type %T", fv.Interface()))
 	}
-	if flag {
-		err = fmt.Errorf("不等于")
+	if !flag {
+		err = fmt.Errorf("%s不大于%s", title, param)
 	}
 	return
 }
 
 // isGte
-func isGte(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func isGte(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	var flag bool
 	if len(params) != 1 {
 		err = fmt.Errorf("参数个数有误")
@@ -250,14 +250,14 @@ func isGte(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
 	default:
 		panic(fmt.Sprintf("Bad field type %T", fv.Interface()))
 	}
-	if flag {
-		err = fmt.Errorf("不等于")
+	if !flag {
+		err = fmt.Errorf("%s小于%s", title, param)
 	}
 	return
 }
 
 // hasLengthOf
-func hasLengthOf(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func hasLengthOf(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	var vInt int64
 	var vFloat float64
 	if len(params) < 1 {
@@ -343,17 +343,17 @@ func hasLengthOf(ft reflect.Type, fv reflect.Value, params ...string) (err error
 }
 
 // hasMinOf
-func hasMinOf(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
-	return isGte(ft, fv, params...)
+func hasMinOf(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
+	return isGte(ft, fv, title, params...)
 }
 
 // hasMaxOf
-func hasMaxOf(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
-	return isLte(ft, fv, params...)
+func hasMaxOf(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
+	return isLte(ft, fv, title, params...)
 }
 
 // hasValue
-func hasValue(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func hasValue(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	if isZeroValue(fv) {
 		err = fmt.Errorf("不能为空")
 	}
@@ -362,7 +362,7 @@ func hasValue(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
 }
 
 // isIn
-func isIn(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func isIn(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	var vals []reflect.Value
 	var argsI []interface{}
 	kind := ft.Kind()
@@ -407,7 +407,7 @@ func isIn(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
 }
 
 // IsEmail is the validation function for validating if the current field's value is a valid email address.
-func isEmail(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func isEmail(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	if !emailRegex.MatchString(fv.String()) {
 		err = fmt.Errorf("非Email:%s", fv.String())
 	}
@@ -415,7 +415,7 @@ func isEmail(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
 }
 
 // isPhone
-func isPhone(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func isPhone(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	if !phoneRegex.MatchString(fv.String()) {
 		err = fmt.Errorf(trans(lang.ValidIsPhone), fv.String())
 	}
@@ -423,7 +423,7 @@ func isPhone(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
 }
 
 // isNumber
-func isNumber(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func isNumber(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	switch ft.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32, reflect.Float64:
 		return
@@ -436,7 +436,7 @@ func isNumber(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
 }
 
 // isIPv4
-func isIPv4(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func isIPv4(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	ip := net.ParseIP(fv.String())
 	if ip == nil || ip.To4() != nil {
 		err = fmt.Errorf("非IPv4")
@@ -445,7 +445,7 @@ func isIPv4(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
 }
 
 // isIPv6
-func isIPv6(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func isIPv6(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	ip := net.ParseIP(fv.String())
 	if ip == nil || ip.To16() != nil {
 		err = fmt.Errorf("非IPv6")
@@ -454,7 +454,7 @@ func isIPv6(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
 }
 
 // isIP
-func isIP(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func isIP(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	ip := net.ParseIP(fv.String())
 	if ip == nil {
 		err = fmt.Errorf("非IP")
@@ -463,7 +463,7 @@ func isIP(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
 }
 
 // isUnique
-func isUnique(ft reflect.Type, fv reflect.Value, params ...string) (err error) {
+func isUnique(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error) {
 	var flag bool
 	v := reflect.ValueOf(1)
 	switch ft.Kind() {
