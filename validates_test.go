@@ -441,12 +441,13 @@ type Class struct {
 }
 
 type Student struct {
-	Uid          int64    `validate:"required;integer=1,1000000" title:"学生ID"`
-	Name         string   `validate:"required;string=1,5" title:"姓名"`
-	Age          int64    `validate:"required;integer=10,30"`
+	Uid          int64    `validate:"required;len=1,1000000" title:"学生ID"`
+	Name         string   `validate:"required;len=1,5" title:"姓名"`
+	Age          int64    `validate:"required;in=10,30"`
 	Sex          string   `validate:"required;in=male,female"`
 	Email        string   `validate:"email"`
-	PersonalPage string   `validate:"url;um;usv"`
+	Phone        string   `validate:"phone"`
+	PersonalPage string   `validate:"url"`
 	Hobby        []string `validate:"array=_,2;unique;in=swimming,running,drawing"`
 	CreateTime   string   `validate:"datetime"`
 	Class        []Class  `validate:"array=1,3"`
@@ -487,6 +488,7 @@ func TestMuti1(t *testing.T) {
 			Age:          12,
 			Sex:          "male",
 			Email:        "123456@qq.com",
+			Phone:        "123456",
 			PersonalPage: "http://www.abcd.com",
 			Hobby:        []string{"swimming", "running"},
 			CreateTime:   "2018-03-03 05:00:00",
