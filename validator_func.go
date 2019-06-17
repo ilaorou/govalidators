@@ -1,7 +1,6 @@
 package validators
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"reflect"
@@ -13,11 +12,9 @@ var (
 	timeType = reflect.TypeOf(time.Time{})
 )
 
-type FuncCtx func(ctx context.Context, fv reflect.Value) bool
+type FuncCtx func(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error)
 
-type Func func(ft reflect.Type, fv reflect.Value, title string, params ...string) (err error)
-
-var defaultValidator = map[string]Func{
+var defaultValidator = map[string]FuncCtx{
 	"required": hasValue,
 	"len":      hasLengthOf,
 	"min":      hasMinOf,

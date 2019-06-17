@@ -23,7 +23,7 @@ type Validator struct {
 	TitleTag   string
 	lazy       bool
 	allowEmpty bool
-	validator  map[string]Func
+	validator  map[string]FuncCtx
 }
 
 func New() *Validator {
@@ -67,13 +67,13 @@ func (v *Validator) SetLazy(lazy bool) *Validator {
 }
 
 // RegisterValidator 注册新验证规则
-func (v *Validator) RegisterValidator(validatorK string, validator Func) *Validator {
+func (v *Validator) RegisterValidator(validatorK string, validator FuncCtx) *Validator {
 	v.validator[validatorK] = validator
 	return v
 }
 
 // RegisterValidators 批量注册新验证规则
-func (v *Validator) RegisterValidators(validatorMap map[string]Func) *Validator {
+func (v *Validator) RegisterValidators(validatorMap map[string]FuncCtx) *Validator {
 	for validatorK, validatorV := range validatorMap {
 		v.validator[validatorK] = validatorV
 	}
