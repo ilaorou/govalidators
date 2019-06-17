@@ -11,7 +11,6 @@ import (
 
 var (
 	timeType = reflect.TypeOf(time.Time{})
-	//defaultCField = &cField{namesEqual: true}
 )
 
 type FuncCtx func(ctx context.Context, fv reflect.Value) bool
@@ -35,10 +34,9 @@ var defaultValidator = map[string]Func{
 	"ipv6":     isIPv6,
 	"ip":       isIP,
 	"in":       isIn,
+	"unique":   isUnique,
 	//"datetime": isDatetie,
 	//"url":      isUrl,
-	//"between":  isBetween,
-	"unique": isUnique,
 }
 
 // isEq
@@ -304,7 +302,7 @@ func hasLengthOf(ft reflect.Type, fv reflect.Value, title string, params ...stri
 		}
 	} else if len(params) >= 1 {
 
-		if params[0] != "_" {
+		if params[0] != VALIDATOR_IGNORE_SIGN {
 			//fmt.Println("INT32:", fv.String(), kind, vInt, asInt(params[0]))
 			if kind == reflect.Float64 {
 				if asFloat(params[0]) > vFloat {
@@ -321,7 +319,7 @@ func hasLengthOf(ft reflect.Type, fv reflect.Value, title string, params ...stri
 				}
 			}
 		}
-		if params[1] != "_" {
+		if params[1] != VALIDATOR_IGNORE_SIGN {
 
 			if kind == reflect.Float64 {
 				if asFloat(params[1]) < vFloat {

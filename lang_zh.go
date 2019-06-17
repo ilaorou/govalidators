@@ -6,5 +6,4 @@ var zh = map[string]string{
 	ValidIsNumber: "非数字:%s",
 	ValidIsPhone:  "手机号码(%s)不正确",
 	ValidIsUrl:    "Url格式不正确",
-	"hello4":      "hello world",
 }

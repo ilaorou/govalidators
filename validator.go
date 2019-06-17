@@ -13,56 +13,7 @@ const (
 	VALIDATOR_RANGE_SPLIT   = ","
 	VALIDATOR_IGNORE_SIGN   = "_"
 	VALIDATOR_MUTIPLE_SPLIT = ";"
-
-	//邮箱验证正则
-	MAIL_REG = `\A[\w+\-.]+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z`
-	//url验证正则
-	URL_REG = `^(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?$`
-	//是否为整数正则
-	INTEGER_REG = `^(-)?[0-9]+$`
-	//是否为float正则
-	FLOAT_REG = `^(-)?[0-9]+(.[0-9]+)$`
-	//年正则
-	YEAR_REG = `(19|2[0-4])\d{2}`
-	//月正则
-	MONTH_REF = `(10|11|12|0[1-9])`
-	//日正则
-	DAY_REF = `(30|31|0[1-9]|[1-2][0-9])`
-	//小时正则
-	HOUR_REF = `(20|21|22|23|[0-1]\d)`
-	//分钟正则
-	MINUTE_REF = `([0-5]\d)`
-	//秒正则
-	SECOND_REF = `([0-5]\d)`
 )
-
-/****************************************************
- * range 验证错误提示 map
- ****************************************************/
-var stringErrorMap = map[string]string{
-	"lt":      "[name] should be less than [max] chars long",
-	"eq":      "[name] should be eq [min] chars long",
-	"gt":      "[name] should be great than [min] chars long",
-	"between": "[name] should be betwween [min] and [max] chars long",
-}
-
-var numberErrorMap = map[string]string{
-	"lt":      "[name] should be less than [max]",
-	"eq":      "[name] should be eq [min]",
-	"gt":      "[name] should be great than [min]",
-	"between": "[name] should be betwween [min] and [max]",
-}
-
-var arrayErrorMap = map[string]string{
-	"lt":      "array [name] length should be less than [max]",
-	"eq":      "array [name] length should be eq [min]",
-	"gt":      "array [name] length should be great than [min]",
-	"between": "array [name] length should be betwween [min] and [max]",
-}
-
-/****************************************************
- * range 验证错误提示 map
- ****************************************************/
 
 var errorMsg map[string][]string
 var lang = "zh"
